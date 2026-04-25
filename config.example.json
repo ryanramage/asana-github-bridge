@@ -1,0 +1,16 @@
+{
+  "path": "/webhook",
+  "seed": "",
+  "github": {
+    "webhookSecret": "replace-with-the-secret-you-set-on-the-github-org-webhook"
+  },
+  "asana": {
+    "token": "replace-with-your-asana-personal-access-token",
+    "apiBase": "https://app.asana.com/api/1.0",
+    "prUrlFieldGid": "1207193124323392",
+    "prUrlFieldName": "GH PR",
+    "prMergedFieldGid": "1211319677640481",
+    "prMergedFieldName": "merged",
+    "prMergedEnumValue": "Yes"
+  }
+}
