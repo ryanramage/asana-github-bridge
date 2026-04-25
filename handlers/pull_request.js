@@ -1,7 +1,7 @@
 'use strict';
 
-const { extractAsanaTasks } = require('../asana-links');
-const { syncPrToTask } = require('../asana');
+const { extractAsanaTasks } = require('../lib/asana-links');
+const { syncPrToTask } = require('../lib/asana');
 
 // Handler for GitHub `pull_request` events.
 //

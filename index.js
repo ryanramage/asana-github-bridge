@@ -15,10 +15,10 @@ const path = require('path');
 const DHT = require('hyperdht');
 const idEnc = require('hypercore-id-encoding');
 
-const { loadConfig } = require('./config');
-const { createAsanaClient } = require('./asana');
-const { createHttpServer } = require('./http-server');
-const { createDhtServer } = require('./dht-server');
+const { loadConfig } = require('./lib/config');
+const { createAsanaClient } = require('./lib/asana');
+const { createHttpServer } = require('./lib/http-server');
+const { createDhtServer } = require('./lib/dht-server');
 const handlers = require('./handlers');
 
 // --- config ------------------------------------------------------------
