@@ -319,7 +319,8 @@ test('handlePullRequest - missing pull_request object', async function (t) {
   
   const context = {
     config: { asana: {} },
-    asanaClient: null
+    asanaClient: null,
+    dontConsoleError: true
   }
   
   // Should handle missing pull_request gracefully

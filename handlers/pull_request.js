@@ -52,6 +52,7 @@ module.exports = async function handlePullRequest(payload, context) {
           );
         })
         .catch((err) => {
+          if (context.noConsoleError) return 
           console.error(
             `[asana] sync failed task=${task.taskId} pr=${pr.html_url}: ${err.message}`
           );

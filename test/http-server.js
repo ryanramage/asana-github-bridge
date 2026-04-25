@@ -362,7 +362,7 @@ test('POST /webhook - handler throws sync error', async function (t) {
   const server = createHttpServer({
     config,
     handlers,
-    context: {}
+    context: { noConsoleError: true }
   })
   
   const req = new MockRequest('POST', '/webhook', {
@@ -400,7 +400,7 @@ test('POST /webhook - handler throws async error', async function (t) {
   const server = createHttpServer({
     config,
     handlers,
-    context: {}
+    context: { noConsoleError: true }
   })
   
   const req = new MockRequest('POST', '/webhook', {
