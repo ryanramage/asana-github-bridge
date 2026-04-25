@@ -8,6 +8,11 @@ async function runTests() {
   test.pause()
 
   await import('./asana-links.js')
+  await import('./signature.js')
+  await import('./config.js')
+  await import('./asana.js')
+  await import('./pull_request.js')
+  await import('./http-server.js')
 
   test.resume()
 }
