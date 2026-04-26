@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "gen-seed": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
     "format": "prettier . --write",
     "lint": "lunte && prettier . --check",
     "test": "node test/all.js"
