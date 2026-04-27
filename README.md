@@ -86,6 +86,7 @@ A template is provided in [`config.example.json`](./config.example.json):
 {
   "path": "/webhook",
   "seed": "",
+  "acceptUnknownEvents": true,
   "github": {
     "webhookSecret": "replace-with-the-secret-you-set-on-the-github-org-webhook"
   },
@@ -103,10 +104,11 @@ A template is provided in [`config.example.json`](./config.example.json):
 
 ### Top-level
 
-| Key    | Type   | Required | Description                                                                                                                                                                                                                                          |
-| ------ | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `path` | string | no       | URL path the bridge accepts POSTs on. Defaults to `/webhook`. Must match the path configured on the GitHub webhook (and on `http-dht-proxy`).                                                                                                        |
-| `seed` | string | no       | 64-character hex string (32 bytes) used to derive a stable DHT key pair. Leave empty to generate an ephemeral key on each start. Generate one with `npm run gen-seed` (see [Generating a stable seed](#generating-a-stable-seed)). |
+| Key                   | Type    | Required | Description                                                                                                                                                                                                                                          |
+| --------------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `path`                | string  | no       | URL path the bridge accepts POSTs on. Defaults to `/webhook`. Must match the path configured on the GitHub webhook (and on `http-dht-proxy`).                                                                                                        |
+| `seed`                | string  | no       | 64-character hex string (32 bytes) used to derive a stable DHT key pair. Leave empty to generate an ephemeral key on each start. Generate one with `npm run gen-seed` (see [Generating a stable seed](#generating-a-stable-seed)). |
+| `acceptUnknownEvents` | boolean | no       | When `true` (the default), events that have no registered handler — e.g. `star`, `watch`, `fork` from an org-wide "Send me everything" webhook — are answered with `200 ok` so GitHub doesn't mark the delivery as failed. Set to `false` to return `404 no handler for event` instead, which surfaces unhandled events as red entries in the GitHub webhook UI. Registered handlers always take precedence regardless of this setting. |
 
 ### `github`
 
@@ -133,9 +135,12 @@ A template is provided in [`config.example.json`](./config.example.json):
 ## Current handlers
 
 Handlers live in [`handlers/`](./handlers) and are dispatched by the value of
-the `X-GitHub-Event` header. The dispatcher always responds `202 Accepted`
-quickly and runs the handler in the background; unknown events are accepted
-and logged but otherwise ignored.
+the `X-GitHub-Event` header. When a handler is registered the dispatcher
+responds `202 Accepted` immediately and runs the handler in the background.
+Events with no registered handler default to `200 ok` (logged and ignored)
+so GitHub doesn't flag deliveries from "Send me everything" webhooks as
+failed; flip [`acceptUnknownEvents`](#top-level) to `false` if you'd rather
+see them as 404s.
 
 ### `ping` — [`handlers/ping.js`](./handlers/ping.js)
 

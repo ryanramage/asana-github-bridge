@@ -1,6 +1,7 @@
 {
   "path": "/webhook",
   "seed": "",
+  "acceptUnknownEvents": true,
   "github": {
     "webhookSecret": "replace-with-the-secret-you-set-on-the-github-org-webhook"
   },

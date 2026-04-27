@@ -13,6 +13,7 @@ test('parseConfig - minimal valid config', async function (t) {
   const result = parseConfig(input)
   t.is(result.path, '/webhook', 'default webhook path')
   t.is(result.seed, null, 'no seed buffer')
+  t.is(result.acceptUnknownEvents, true, 'acceptUnknownEvents defaults to true')
   t.is(result.github.webhookSecret, 'my-secret', 'webhook secret')
   t.is(result.asana.token, '', 'empty asana token')
   t.is(result.asana.apiBase, 'https://app.asana.com/api/1.0', 'default api base')
@@ -21,6 +22,45 @@ test('parseConfig - minimal valid config', async function (t) {
   t.is(result.asana.prMergedFieldGid, '', 'empty prMergedFieldGid')
   t.is(result.asana.prMergedFieldName, 'merged', 'default prMergedFieldName')
   t.is(result.asana.prMergedEnumValue, 'Yes', 'default prMergedEnumValue')
+})
+
+test('parseConfig - acceptUnknownEvents defaults to true', async function (t) {
+  const result = parseConfig({
+    github: { webhookSecret: 'my-secret' }
+  })
+  t.is(result.acceptUnknownEvents, true, 'omitted -> true')
+})
+
+test('parseConfig - acceptUnknownEvents explicit true', async function (t) {
+  const result = parseConfig({
+    acceptUnknownEvents: true,
+    github: { webhookSecret: 'my-secret' }
+  })
+  t.is(result.acceptUnknownEvents, true, 'explicit true is preserved')
+})
+
+test('parseConfig - acceptUnknownEvents explicit false', async function (t) {
+  const result = parseConfig({
+    acceptUnknownEvents: false,
+    github: { webhookSecret: 'my-secret' }
+  })
+  t.is(result.acceptUnknownEvents, false, 'explicit false is preserved')
+})
+
+test('parseConfig - acceptUnknownEvents only false disables (other falsy values default to true)', async function (t) {
+  // Be strict: only explicit boolean false flips it. This avoids accidental
+  // disablement from typos like 0 / "" / null in handwritten JSON.
+  const r1 = parseConfig({
+    acceptUnknownEvents: 0,
+    github: { webhookSecret: 'my-secret' }
+  })
+  t.is(r1.acceptUnknownEvents, true, '0 does not disable')
+
+  const r2 = parseConfig({
+    acceptUnknownEvents: null,
+    github: { webhookSecret: 'my-secret' }
+  })
+  t.is(r2.acceptUnknownEvents, true, 'null does not disable')
 })
 
 test('parseConfig - custom webhook path', async function (t) {

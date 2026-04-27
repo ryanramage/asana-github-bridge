@@ -212,39 +212,147 @@ test('POST /webhook - invalid JSON returns 400', async function (t) {
   t.is(res.body, 'invalid json', 'should return invalid json')
 })
 
-test('POST /webhook - unknown event returns 202', async function (t) {
-  const body = JSON.stringify({ action: 'opened' })
+test('POST /webhook - unknown event returns 200 by default', async function (t) {
+  const body = JSON.stringify({ action: 'created' })
   const secret = 'my-secret'
   const signature = createSignature(secret, body)
-  
+
   const config = {
     path: '/webhook',
     github: { webhookSecret: secret }
+    // acceptUnknownEvents not set -> defaults to true
   }
-  
+
   const handlers = {
     pull_request: async () => {}
   }
-  
+
   const server = createHttpServer({
     config,
     handlers,
     context: {}
   })
-  
+
   const req = new MockRequest('POST', '/webhook', {
-    'x-github-event': 'unknown_event',
+    'x-github-event': 'star',
     'x-github-delivery': 'test-delivery-123',
     'x-hub-signature-256': signature
   }, body)
   const res = new MockResponse()
-  
+
   server.emit('request', req, res)
   req.sendBody()
-  
+
   await new Promise(resolve => setImmediate(resolve))
-  
-  t.is(res.statusCode, 202, 'should return 202 accepted')
+
+  t.is(res.statusCode, 200, 'should return 200 ok')
+  t.is(res.body, 'ok', 'should return ok')
+})
+
+test('POST /webhook - unknown event returns 200 when acceptUnknownEvents is true', async function (t) {
+  const body = JSON.stringify({ action: 'started' })
+  const secret = 'my-secret'
+  const signature = createSignature(secret, body)
+
+  const config = {
+    path: '/webhook',
+    acceptUnknownEvents: true,
+    github: { webhookSecret: secret }
+  }
+
+  const server = createHttpServer({
+    config,
+    handlers: {},
+    context: {}
+  })
+
+  const req = new MockRequest('POST', '/webhook', {
+    'x-github-event': 'watch',
+    'x-github-delivery': 'test-delivery-456',
+    'x-hub-signature-256': signature
+  }, body)
+  const res = new MockResponse()
+
+  server.emit('request', req, res)
+  req.sendBody()
+
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.is(res.statusCode, 200, 'should return 200 ok')
+  t.is(res.body, 'ok', 'should return ok')
+})
+
+test('POST /webhook - unknown event returns 404 when acceptUnknownEvents is false', async function (t) {
+  const body = JSON.stringify({ action: 'created' })
+  const secret = 'my-secret'
+  const signature = createSignature(secret, body)
+
+  const config = {
+    path: '/webhook',
+    acceptUnknownEvents: false,
+    github: { webhookSecret: secret }
+  }
+
+  const server = createHttpServer({
+    config,
+    handlers: {},
+    context: {}
+  })
+
+  const req = new MockRequest('POST', '/webhook', {
+    'x-github-event': 'star',
+    'x-github-delivery': 'test-delivery-789',
+    'x-hub-signature-256': signature
+  }, body)
+  const res = new MockResponse()
+
+  server.emit('request', req, res)
+  req.sendBody()
+
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.is(res.statusCode, 404, 'should return 404 when opted out')
+  t.is(res.body, 'no handler for event', 'should return no handler message')
+})
+
+test('POST /webhook - registered handler still wins when acceptUnknownEvents is false', async function (t) {
+  t.plan(2)
+
+  const body = JSON.stringify({ action: 'opened' })
+  const secret = 'my-secret'
+  const signature = createSignature(secret, body)
+
+  const config = {
+    path: '/webhook',
+    acceptUnknownEvents: false,
+    github: { webhookSecret: secret }
+  }
+
+  const handlers = {
+    pull_request: async () => {
+      t.ok(true, 'handler should be called even when acceptUnknownEvents is false')
+    }
+  }
+
+  const server = createHttpServer({
+    config,
+    handlers,
+    context: {}
+  })
+
+  const req = new MockRequest('POST', '/webhook', {
+    'x-github-event': 'pull_request',
+    'x-github-delivery': 'test-delivery-known',
+    'x-hub-signature-256': signature
+  }, body)
+  const res = new MockResponse()
+
+  server.emit('request', req, res)
+  req.sendBody()
+
+  await new Promise(resolve => setTimeout(resolve, 10))
+
+  t.is(res.statusCode, 202, 'registered handler dispatches with 202')
 })
 
 test('POST /webhook - custom webhook path', async function (t) {
