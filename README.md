@@ -134,16 +134,16 @@ A template is provided in [`config.example.json`](./config.example.json):
 
 ### Github webhook setup
 
-When you start the service, you will get output like:
+1. When you start the service, you will get output with your hyperproxy url:
 
 `github-asana-bridge listening https://<yourkey>.hyperproxy.org/webhook`
 
-Copy the url for the hyperproxy.org and use it below
+2. Copy the url for the hyperproxy.org and use it below
 
-- Navigate to your orgs webhook settings, the url will be something like https://github.com/organizations/<orgname>/settings/hooks/
+- Navigate to your orgs webhook settings, the url will be something like https://github.com/organizations/orgname/settings/hooks/
 - Click on 'add webhook'
 
-enter the values below
+3. Enter the values below
 
 ```
 Payload URL \*
