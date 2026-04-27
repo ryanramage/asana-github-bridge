@@ -104,31 +104,63 @@ A template is provided in [`config.example.json`](./config.example.json):
 
 ### Top-level
 
-| Key                   | Type    | Required | Description                                                                                                                                                                                                                                          |
-| --------------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `path`                | string  | no       | URL path the bridge accepts POSTs on. Defaults to `/webhook`. Must match the path configured on the GitHub webhook (and on `http-dht-proxy`).                                                                                                        |
-| `seed`                | string  | no       | 64-character hex string (32 bytes) used to derive a stable DHT key pair. Leave empty to generate an ephemeral key on each start. Generate one with `npm run gen-seed` (see [Generating a stable seed](#generating-a-stable-seed)). |
+| Key                   | Type    | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `path`                | string  | no       | URL path the bridge accepts POSTs on. Defaults to `/webhook`. Must match the path configured on the GitHub webhook (and on `http-dht-proxy`).                                                                                                                                                                                                                                                                                           |
+| `seed`                | string  | no       | 64-character hex string (32 bytes) used to derive a stable DHT key pair. Leave empty to generate an ephemeral key on each start. Generate one with `npm run gen-seed` (see [Generating a stable seed](#generating-a-stable-seed)).                                                                                                                                                                                                      |
 | `acceptUnknownEvents` | boolean | no       | When `true` (the default), events that have no registered handler — e.g. `star`, `watch`, `fork` from an org-wide "Send me everything" webhook — are answered with `200 ok` so GitHub doesn't mark the delivery as failed. Set to `false` to return `404 no handler for event` instead, which surfaces unhandled events as red entries in the GitHub webhook UI. Registered handlers always take precedence regardless of this setting. |
 
 ### `github`
 
-| Key             | Type   | Required | Description                                                                                                                                          |
-| --------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Key             | Type   | Required | Description                                                                                                                                        |
+| --------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `webhookSecret` | string | yes      | The secret you set when creating the GitHub webhook. Each request is verified with HMAC-SHA256 against the `X-Hub-Signature-256` header. Required. |
 
 ### `asana`
 
-| Key                  | Type   | Required | Description                                                                                                                                                                                              |
-| -------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `token`              | string | no       | Asana Personal Access Token. If absent or left as the placeholder, the bridge runs in "dry-run" mode: it logs what it would do but does not call Asana.                                                  |
-| `apiBase`            | string | no       | Asana API base URL. Defaults to `https://app.asana.com/api/1.0`.                                                                                                                                         |
-| `prUrlFieldGid`      | string | no       | Gid of the Asana custom field that should hold the PR URL. Preferred — gids are stable across renames.                                                                                                   |
-| `prUrlFieldName`     | string | no       | Fallback name lookup for the PR URL field if `prUrlFieldGid` isn't set or doesn't match. Defaults to `GH PR`.                                                                                            |
-| `prMergedFieldGid`   | string | no       | Gid of the Asana enum custom field that tracks "merged" state.                                                                                                                                           |
-| `prMergedFieldName`  | string | no       | Fallback name lookup for the merged field. Defaults to `merged`.                                                                                                                                         |
-| `prMergedEnumValue`  | string | no       | The name of the enum option to set when a PR is merged. Defaults to `Yes`.                                                                                                                               |
+| Key                 | Type   | Required | Description                                                                                                                                             |
+| ------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `token`             | string | no       | Asana Personal Access Token. If absent or left as the placeholder, the bridge runs in "dry-run" mode: it logs what it would do but does not call Asana. |
+| `apiBase`           | string | no       | Asana API base URL. Defaults to `https://app.asana.com/api/1.0`.                                                                                        |
+| `prUrlFieldGid`     | string | no       | Gid of the Asana custom field that should hold the PR URL. Preferred — gids are stable across renames.                                                  |
+| `prUrlFieldName`    | string | no       | Fallback name lookup for the PR URL field if `prUrlFieldGid` isn't set or doesn't match. Defaults to `GH PR`.                                           |
+| `prMergedFieldGid`  | string | no       | Gid of the Asana enum custom field that tracks "merged" state.                                                                                          |
+| `prMergedFieldName` | string | no       | Fallback name lookup for the merged field. Defaults to `merged`.                                                                                        |
+| `prMergedEnumValue` | string | no       | The name of the enum option to set when a PR is merged. Defaults to `Yes`.                                                                              |
 
 `config.json` is gitignored — only `config.example.json` is committed.
+
+---
+
+### Github webhook setup
+
+When you start the service, you will get output like:
+
+`github-asana-bridge listening https://<yourkey>.hyperproxy.org/webhook`
+
+Copy the url for the hyperproxy.org and use it below
+
+- Navigate to your orgs webhook settings, the url will be something like https://github.com/organizations/<orgname>/settings/hooks/
+- Click on 'add webhook'
+
+enter the values below
+
+```
+Payload URL \*
+https://<yourkey>.hyperproxy.org/webhook
+
+Content type \*
+applicaton/json
+
+secret
+something you put in the config.json, can be any string
+
+SSL verification
+Enable ssl verification
+
+Which events would you like to trigger this webhook?
+Send me everything.
+```
 
 ---
 
@@ -164,7 +196,7 @@ Reacts to all `pull_request` event actions (opened, edited, closed, etc.).
      `merged`. If not already set to `prMergedEnumValue`, flip it. Never
      cleared on close-without-merge.
 
-If `asana.token` is unset the handler logs what it *would* sync and returns
+If `asana.token` is unset the handler logs what it _would_ sync and returns
 without calling the API.
 
 ---
@@ -200,9 +232,9 @@ Steps:
 
    ```js
    module.exports = {
-     ping: require('./ping'),
-     pull_request: require('./pull_request'),
-     issues: require('./issues') // <-- new
+     ping: require("./ping"),
+     pull_request: require("./pull_request"),
+     issues: require("./issues"), // <-- new
    };
    ```
 

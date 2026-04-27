@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // Entry point: wires config + modules together. No business logic lives here.
 //
@@ -11,20 +11,20 @@
 //   http-server.js     createHttpServer({ config, handlers, context })
 //   dht-server.js      createDhtServer({ httpServer, keyPair })
 
-const path = require('path');
-const DHT = require('hyperdht');
-const idEnc = require('hypercore-id-encoding');
+const path = require("path");
+const DHT = require("hyperdht");
+const idEnc = require("hypercore-id-encoding");
 
-const { loadConfig } = require('./lib/config');
-const { createAsanaClient } = require('./lib/asana');
-const { createHttpServer } = require('./lib/http-server');
-const { createDhtServer } = require('./lib/dht-server');
-const handlers = require('./handlers');
+const { loadConfig } = require("./lib/config");
+const { createAsanaClient } = require("./lib/asana");
+const { createHttpServer } = require("./lib/http-server");
+const { createDhtServer } = require("./lib/dht-server");
+const handlers = require("./handlers");
 
 // --- config ------------------------------------------------------------
 const CONFIG_PATH = process.env.CONFIG_PATH
   ? path.resolve(process.env.CONFIG_PATH)
-  : path.join(__dirname, 'config.json');
+  : path.join(__dirname, "config.json");
 
 let config;
 try {
@@ -37,11 +37,11 @@ try {
 // --- shared context for handlers --------------------------------------
 const asanaClient = createAsanaClient({
   token: config.asana.token,
-  apiBase: config.asana.apiBase
+  apiBase: config.asana.apiBase,
 });
 if (!asanaClient) {
   console.warn(
-    '[asana] no token configured; Asana task updates will be skipped (dry-run logging only).'
+    "[asana] no token configured; Asana task updates will be skipped (dry-run logging only).",
   );
 }
 
@@ -56,13 +56,13 @@ const dhtServer = createDhtServer({ httpServer, keyPair });
 
 dhtServer.listen().then(() => {
   console.log(
-    `github-asana-bridge listening on DHT key ${idEnc.normalize(keyPair.publicKey)} path=${config.path}`
+    `github-asana-bridge listening https://${idEnc.normalize(keyPair.publicKey)}.hyperproxy.org${config.path}`,
   );
 });
 
 // --- shutdown ----------------------------------------------------------
 let shuttingDown = false;
-for (const sig of ['SIGINT', 'SIGTERM']) {
+for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, async () => {
     if (shuttingDown) return;
     shuttingDown = true;
@@ -72,7 +72,7 @@ for (const sig of ['SIGINT', 'SIGTERM']) {
       await dhtServer.close();
       httpServer.close();
     } catch (err) {
-      console.warn('Error during shutdown:', err);
+      console.warn("Error during shutdown:", err);
     }
     clearTimeout(hardExit);
     process.exit(0);
